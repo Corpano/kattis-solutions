@@ -7,14 +7,23 @@ struct Player{
 public:
     long guess;
     long numOfEnemies;
+    bool removed = false;
+    int circleType = -1;
 };
 
 int mobCount = 0;
 vector<Player> playersList;
-unordered_set<long> removedPlayers;
+
+bool isPlayerRemoved(int player){
+    return playersList[player].removed;
+}
+
+void removePlayer(int player){
+    playersList[player].removed = true;
+}
 
 void recurseMob(int player){
-    if(removedPlayers.count(player) || playersList[player].numOfEnemies > 0)
+    if(isPlayerRemoved(player) || playersList[player].numOfEnemies > 0)
         return;
 
     // We found mob
@@ -23,14 +32,30 @@ void recurseMob(int player){
     int mobGuess = playersList[player].guess;
     int mobGuessesGuess = playersList[mobGuess].guess;
 
-    if(!removedPlayers.count(playersList[player].guess)) {
+    if(!isPlayerRemoved(playersList[player].guess)) {
         --playersList[mobGuessesGuess].numOfEnemies;
-        removedPlayers.insert(playersList[player].guess);
+        removePlayer(playersList[player].guess);
 
         recurseMob(mobGuessesGuess);
     }
 
-    removedPlayers.insert(player);
+    removePlayer(player);
+}
+
+// Finds all circular groups and updates types of players
+map<int, int> circularPlayerGroups;
+void recurseCircle(int player, int circleType){
+    if(playersList[player].circleType == -1 && !isPlayerRemoved(player)){
+        playersList[player].circleType = circleType;
+
+        if(circularPlayerGroups.count(circleType)){
+            ++circularPlayerGroups[circleType];
+        }else{
+            circularPlayerGroups[circleType] = 1;
+        }
+
+        recurseCircle(playersList[player].guess, circleType);
+    }
 }
 
 int main(){
@@ -51,6 +76,20 @@ int main(){
         recurseMob(i);
     }
 
-    cout << mobCount + floor(double(n - removedPlayers.size()) / 2.0);
+    // Takes care of remaining "circular" connected nodes in graph
+    int currCircleType = 0;
+    for(int i = 0; i < playersList.size(); i++){
+        if(!isPlayerRemoved(i))
+        {
+            recurseCircle(i, currCircleType);
+            ++currCircleType;
+        }
+    }
+    int extraMobs = 0;
+    for(auto c : circularPlayerGroups){
+        extraMobs += floor(c.second / 2.0);
+    }
+
+    cout << mobCount + extraMobs;
     return 0;
 }
