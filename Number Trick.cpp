@@ -20,9 +20,8 @@ int getFrac(long double d){
 bool doesInputHaveSolution(double n){
     int f = getFrac(n);
     int addNext = preprintAnswerd[f];
-
     long curr = addNext;
-    bool found = false;
+    
     string output = "";
 
     while(curr < 100000000){
@@ -32,7 +31,6 @@ bool doesInputHaveSolution(double n){
         int n2 = curr * n;
 
         if(stoi(c2) == n2){
-            found = true;
             return true;
         }
 
@@ -89,8 +87,8 @@ int main(){
 //    }
 //
 
-//
-//    for (int i = 1; i < 1000; i++){
+//    "Good inputs" range from 1 to 5. Over 5 there are no "good inputs" because multiplying by large numbers give more digits
+//    for (int i = 1; i < 6; i++){
 //        for (int x = 0; x < 10000; x++){
 //            double n = i + x/10000.0;
 //            if(doesInputHaveSolution(n)){
